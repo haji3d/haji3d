@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "mfcapp",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authmfcappf4fdfc42",
+      "Outputs.UserPoolId"
+    ]
+  }
+}

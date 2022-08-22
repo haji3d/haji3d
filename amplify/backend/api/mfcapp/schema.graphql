@@ -1,0 +1,336 @@
+type Profile
+  @model
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] }, 
+    { allow: private, provider: iam },
+    { allow: owner, ownerField: "cognitoId" }]) {
+  id: ID!
+  cognitoId: String!
+  firstName: String
+  lastName: String
+  email: String
+  birthDate: AWSDate
+  length: Float
+  targetWeight: Float
+  currentCourseId: ID
+  currentCourse: [Course] @connection(fields: ["currentCourseId"])
+}
+type Program 
+  @model
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] }
+    { allow: private, operations: [read] }
+    { allow: private, provider: iam, operations: [read] }
+  ]){
+  id: ID!
+  name: String!
+  isForSale: Boolean!
+  price: Float
+  description: String!
+  imageUrl: String!
+  productUrl: String!
+  productStoreId: String
+  courses: [ProgramCourse]! @connection(keyName: "byProgram", fields: ["id"])
+}
+type ProgramCourse  
+  @model
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] }
+    { allow: private, operations: [read] }
+  ])
+  @key(name: "byProgram", fields: ["programId", "courseId"])
+  @key(name: "byCourse", fields: ["courseId", "programId"]) {
+    id: ID!
+    courseId: ID!
+    programId: ID!
+    course: Course! @connection(fields: ["courseId"])
+    program: Program! @connection(fields: ["programId"])
+}
+type Membership 
+  @model
+  @auth(rules: [
+    { allow: groups, groups:["admin"] }
+    { allow: private, provider: iam }
+    { allow: owner, ownerField: "cognitoId", operations: [read] }
+  ])
+  {
+    id: ID!
+    cognitoId: ID!
+    programId: ID!
+    program: Program @connection(fields: ["programId"])
+  }
+type Enrollment
+  @model
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] }, 
+    { allow: owner } ] ) 
+  @key(name: "ofCourse" fields: ["courseId"] ){
+  id: ID!
+  owner: String
+  courseId: ID!
+  enrolledAt: AWSDateTime
+  startedAt: AWSDateTime
+  completedAt: AWSDateTime
+  course: Course @connection(fields: ["courseId"])
+  moduleSchedule: [ModuleProgress!] @connection(keyName: "ofEnrollment", fields: ["id"])
+}
+type ModuleProgress 
+  @model 
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] }, 
+    { allow: owner },
+    { allow: private, provider: iam },
+    { allow: private, operations: [read] }])
+  @key(name: "ofEnrollment", fields: ["enrollmentId"])
+  @key(name: "moduleId", fields: ["moduleId"]){
+    id: ID!
+    moduleId: ID!
+    enrollmentId: ID!
+    owner: String!
+    availableAt: AWSDateTime!
+    startedAt: AWSDateTime
+    completedAt: AWSDateTime
+    module: Module @connection(fields: ["moduleId"])
+    workbook: [Answer] @connection(keyName: "ofWorkbook" fields: ["id"])
+}
+type Course
+  @model
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] },
+    { allow: private, provider: iam } ,
+    { allow: private, operations: [read] }]) {
+  id: ID!
+  accessGroup: String!
+  name: String!
+  description: String
+  coverImage: String
+  modules: [Module!] @connection( keyName: "ofCourse", fields: ["id"] )
+}
+type Module
+  @model
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] },
+    { allow: private, provider: iam },
+    { allow: private, operations: [read] }])
+  @key(name: "ofCourse", fields: ["courseId"]) {
+  id: ID!
+  courseId: ID!
+  name: String!
+  index: Int
+  description: String!
+  coverImage: String
+  videoUrl: String!
+  delayNumber: Int!
+  delayUOM: String!
+  assignments: [Question!] @connection( keyName: "ofModule", fields: ["id"] )
+  tools: [Downloadable!] @connection( keyName: "ofModule", fields: ["id"] )
+}
+enum QuestionType {
+  SHORT_TEXT
+  LONG_TEXT
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
+type Question
+  @model 
+  @auth(rules: [
+    {allow: groups, groups: ["admin"]},
+    { allow: private, provider: iam },
+    { allow: private, operations: [read]}])
+  @key(name: "ofModule", fields: ["moduleId"]) {
+  id: ID!
+  moduleId: ID!
+  index: Int!
+  type: QuestionType!
+  question: String!
+  introduction: String
+  options: [Option!] @connection( keyName: "ofQuestion", fields: ["id"] )
+  answer: Answer @connection(fields: ["id"] )
+}
+
+type Answer
+  @model
+  @auth( rules: [
+    { allow: groups, groups: ["admin"] }
+    { allow: owner },
+  ])
+  @key(name: "ofQuestion", fields: ["questionId"])
+  @key(name: "ofWorkbook", fields: ["moduleProgressId"]){
+  id: ID!
+  questionId: ID!
+  moduleProgressId: ID!
+  answer: String!
+}
+
+type Option 
+  @model
+  @auth(rules: [
+    { allow: groups, groups: ["admin"] }, 
+    { allow: private, provider: iam },
+    { allow: private, operations: [read]}]) 
+  @key(name: "ofQuestion", fields: ["questionId"] ){
+  id: ID!
+  questionId: ID!
+  label: String!
+  index: Int
+}
+type Measurement
+  @model 
+  @key(name: "byDate", fields: ["type", "date"], queryField: "getMeasurementsByDate")
+  @auth(rules: [
+    { allow: owner },
+    { allow: private, provider: iam },
+    { allow: groups, groups: ["admin"] }
+  ]) {
+  id: ID!
+  date: AWSDate!
+  weight: Float!
+  owner: String!
+  note: String
+  type: String!
+}
+type Downloadable
+  @model
+  @key(name: "ofModule", fields: ["moduleId"] )
+  @auth(rules: [
+    { allow: owner },
+    { allow: private, provider: iam },
+    { allow: private, operations: [read]},
+    { allow: groups, groups: ["admin"] }
+  ]) {
+    id: ID!
+    moduleId: ID!
+    name: String!
+    url: String!
+    index: Int
+  }
+enum ContentState {
+  LIVE
+  DRAFT
+  PENDING
+  OFFLINE
+}
+type Recipe
+  @model
+  @auth(rules: [
+    {allow: groups, groups: ["admin"]}, 
+    { allow: private, operations: [read]}
+  ]) {
+    id: ID!
+    date: AWSDate!
+    state: ContentState!
+    name: String!
+    totalMinutes: Int!
+    preparationMinutes: Int!
+    imageUrl: String!
+    instructionVideoUrl: String
+    steps: [RecipeStep!] @connection( keyName: "forRecipe", fields: ["id"])
+    ingredients: [Ingredient!] @connection( keyName: "forRecipe", fields: ["id"])
+  }
+type Ingredient
+  @model
+  @auth(rules: [{allow: groups, groups: ["admin"]}, { allow: private, operations: [read]}]) 
+  @key(name: "forRecipe", fields: ["recipeId"])
+  @key(name: "forProduct", fields: ["productId"]){
+    id: ID!
+    recipeId: ID!
+    productId: ID!
+    amount: Float!
+    unit: Unit! @connection
+    recipe: Recipe! @connection(fields: ["recipeId"])
+    product: Product! @connection(fields: ["productId"])
+  }
+type Product
+  @model
+  @auth(rules: [{allow: groups, groups: ["admin"]}, { allow: private, operations: [read]}]) {
+    id: ID!
+    name: String!
+    namePlural: String!
+    ingredients: [Ingredient!] @connection(keyName: "forProduct", fields: ["id"])
+  }
+type Unit
+  @model 
+  @auth(rules: [{allow: groups, groups: ["admin"]}, { allow: private, operations: [read]}]) {
+    id: ID!
+    name: String!
+    sign: String
+  }
+type RecipeStep
+  @model 
+  @auth(rules: [{allow: groups, groups: ["admin"]}, { allow: private, operations: [read]}]) 
+  @key(name: "forRecipe", fields: ["recipeId"]) {
+    id: ID!
+    recipeId: ID!
+    index: Int!
+    instructionText: String!
+  }
+
+type Query  {
+  adminListUsers(email: String): [CognitoUser] 
+    @function(name: "mfcAppLambda-${env}") 
+    @auth(rules: [{allow: groups, groups:["admin"]}])
+  adminListGroups: [CognitoGroup] 
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: groups, groups:["admin"]}])
+  adminGetUser(username: String): CognitoUser
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: groups, groups: ["admin"]}])
+}
+
+type Mutation {
+  adminCreateUser(email: String, firstName: String, lastName: String ): CognitoUser 
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: groups, groups:["admin"]}])
+  adminDeleteUser(username: String): Boolean 
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: groups, groups:["admin"]}])
+  adminAddUserToGroup(username: String, groupName: String): Boolean 
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: groups, groups:["admin"]}])
+  subscribeUser(username: String, courseId: String, startDate: AWSDateTime): Boolean 
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: groups, groups:["admin"]}])
+  generateCourseSchedule(startDate: AWSDateTime, courseId: String, enrollmentId: String): Boolean
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: private }])
+  purchaseProgram(productId: String, transactionId: String): Boolean
+    @function(name: "mfcAppLambda-${env}")
+    @auth(rules: [{allow: private }])
+}
+
+type CognitoGroup {
+  GroupName: String
+  Description: String
+  Precedence: Int
+  LastMOdifiedDate: String
+  CreationDate: String
+}
+
+type CognitoUser {
+  Username: String!
+  Attributes: [Value]
+  UserCreateDate: String
+  UserLastModifiedDate: String
+  Enabled: Boolean
+  UserStatus: UserStatus
+  MFAOptions: [MFAOption]
+  PreferredMfaSetting: String
+  UserMFASettingList: String
+}
+type Value {
+  Name: String!
+  Value: String
+}
+type MFAOption {
+  DeliveryMedium: String
+  AttributeName: String
+}
+enum UserStatus {
+  UNCONFIRMED
+  CONFIRMED
+  ARCHIVED
+  COMPROMISED
+  UNKNOWN
+  RESET_REQUIRED
+  FORCE_CHANGE_PASSWORD
+}

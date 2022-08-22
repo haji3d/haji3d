@@ -1,0 +1,54 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-mfcapp-dev-152955-authRole",
+      "UnauthRoleArn": "arn:aws:iam::854037337507:role/amplify-mfcapp-dev-152955-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::854037337507:role/amplify-mfcapp-dev-152955-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-mfcapp-dev-152955-deployment",
+      "UnauthRoleName": "amplify-mfcapp-dev-152955-unauthRole",
+      "StackName": "amplify-mfcapp-dev-152955",
+      "StackId": "arn:aws:cloudformation:eu-west-1:854037337507:stack/amplify-mfcapp-dev-152955/90376ce0-f783-11eb-a8ea-0a86a2abe085",
+      "AmplifyAppId": "d3ridyvrbiy8n8"
+    },
+    "categories": {
+      "auth": {
+        "mfcappf4fdfc42": {}
+      },
+      "function": {
+        "mfcAppFunction": {
+          "deploymentBucketName": "amplify-mfcapp-dev-152955-deployment",
+          "s3Key": "amplify-builds/mfcAppFunction-4c4e70613865692f5156-build.zip"
+        },
+        "mfcAppLambda": {
+          "deploymentBucketName": "amplify-mfcapp-dev-152955-deployment",
+          "s3Key": "amplify-builds/mfcAppLambda-6375665a584c50493771-build.zip"
+        }
+      }
+    }
+  },
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-mfcapp-prod-165653-authRole",
+      "UnauthRoleArn": "arn:aws:iam::854037337507:role/amplify-mfcapp-prod-165653-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::854037337507:role/amplify-mfcapp-prod-165653-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-mfcapp-prod-165653-deployment",
+      "UnauthRoleName": "amplify-mfcapp-prod-165653-unauthRole",
+      "StackName": "amplify-mfcapp-prod-165653",
+      "StackId": "arn:aws:cloudformation:eu-west-1:854037337507:stack/amplify-mfcapp-prod-165653/3ba0c0a0-8b53-11ec-980f-06ce81376dfd",
+      "AmplifyAppId": "d3ridyvrbiy8n8"
+    },
+    "categories": {
+      "auth": {
+        "mfcappf4fdfc42": {}
+      },
+      "function": {
+        "mfcAppLambda": {
+          "deploymentBucketName": "amplify-mfcapp-prod-165653-deployment",
+          "s3Key": "amplify-builds/mfcAppLambda-334f584c634342793152-build.zip"
+        }
+      }
+    }
+  }
+}

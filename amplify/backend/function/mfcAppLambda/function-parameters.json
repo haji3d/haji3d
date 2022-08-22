@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "auth": {
+      "mfcappf4fdfc42": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ]
+    },
+    "api": {
+      "mfcapp": [
+        "Query",
+        "Mutation"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}
